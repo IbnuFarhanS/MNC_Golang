@@ -36,7 +36,7 @@ func (s *TransactionService) ProcessTransaction(customerID string, amount float6
 
 	// Validate the amount
 	log.Println("Validating amount...")
-	if amount < 20000 {
+	if amount <= 0 {
 		return errors.New("minimum amount is 20000")
 	}
 
