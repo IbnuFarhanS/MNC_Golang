@@ -40,6 +40,7 @@ func (a *App) Initialize() {
 
 	// Register customer routes
 	log.Println("Registering customer routes...")
+	a.router.HandleFunc("/register", customerController.Register).Methods(http.MethodPost)
 	a.router.HandleFunc("/login", customerController.Login).Methods(http.MethodPost)
 	log.Println("Customer routes registered.")
 

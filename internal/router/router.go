@@ -24,6 +24,7 @@ func NewRouter() *Router {
 // RegisterCustomerRoutes registers customer-related routes
 func (r *Router) RegisterCustomerRoutes(customerController *controller.CustomerController) {
 	log.Println("Registering customer routes...")
+	r.router.HandleFunc("/register", customerController.Register).Methods(http.MethodPost)
 	r.router.HandleFunc("/login", customerController.Login).Methods(http.MethodPost)
 	log.Println("Customer routes registered.")
 }

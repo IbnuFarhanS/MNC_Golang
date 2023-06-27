@@ -8,10 +8,30 @@ import (
 	"github.com/IbnuFarhanS/Golang_MNC/utils"
 )
 
+type RegisterRequest struct {
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Phone    int    `json:"phone"`
+}
+
+type RegisterResponse struct {
+	Success  bool   `json:"success"`
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Phone    int    `json:"phone"`
+	Message  string `json:"message"`
+}
+
+type RegisterFailed struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
 type LoginResponse struct {
 	Success  bool   `json:"success"`
 	Username string `json:"username"`
-	Password string `json:"password"`
 	Message  string `json:"message"`
 	Token    string `json:"token"`
 }
@@ -61,16 +81,9 @@ func (h *CustomerController) Login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		hashedPassword, err := utils.GenerateHash(req.Password)
-		if err != nil {
-			http.Error(w, "Failed to hash password", http.StatusInternalServerError)
-			return
-		}
-
 		resp := LoginResponse{
 			Success:  true,
 			Username: req.Username,
-			Password: hashedPassword,
 			Message:  "Login successful",
 			Token:    token,
 		}
@@ -93,5 +106,53 @@ func (h *CustomerController) Login(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+// Register handles the customer registration HTTP request
+func (h *CustomerController) Register(w http.ResponseWriter, r *http.Request) {
+	var req RegisterRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	err = h.service.Register(req.Name, req.Username, req.Password, req.Phone)
+	if err != nil {
+		resp := RegisterFailed{
+			Success: false,
+			Message: err.Error(),
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(&resp)
+		if err != nil {
+			http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+
+	hashedPassword, err := utils.GenerateHash(req.Password)
+	if err != nil {
+		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+		return
+	}
+
+	resp := RegisterResponse{
+		Success:  true,
+		Name:     req.Name,
+		Username: req.Username,
+		Password: hashedPassword,
+		Phone:    req.Phone,
+		Message:  "Register success",
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(&resp)
+	if err != nil {
+		http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
+		return
 	}
 }

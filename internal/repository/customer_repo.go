@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 
 	"github.com/IbnuFarhanS/Golang_MNC/internal/models"
 	"github.com/IbnuFarhanS/Golang_MNC/utils"
@@ -13,11 +14,13 @@ import (
 type CustomerRepository interface {
 	GetByUsername(username string) (*models.Customer, error)
 	GetByID(customerID string) (*models.Customer, error)
+	SaveCustomer(customer *models.Customer) error
 }
 
 // InMemoryCustomerRepository implements CustomerRepository interface using in-memory data
 type InMemoryCustomerRepository struct {
-	customers []*models.Customer
+	customers       []*models.Customer
+	customerCounter int
 }
 
 // NewInMemoryCustomerRepository creates a new instance of InMemoryCustomerRepository
@@ -65,4 +68,44 @@ func (r *InMemoryCustomerRepository) GetByID(customerID string) (*models.Custome
 		}
 	}
 	return nil, fmt.Errorf("customer not found")
+}
+
+// SaveCustomer saves a new customer
+func (r *InMemoryCustomerRepository) SaveCustomer(customer *models.Customer) error {
+	// Increment customer counter
+	r.customerCounter++
+
+	// Set customer ID
+	customer.ID = strconv.Itoa(r.customerCounter)
+	// Hash password before saving
+	hashedPassword, err := utils.GenerateHash(customer.Password)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %v", err)
+	}
+	customer.Password = hashedPassword
+
+	r.customers = append(r.customers, customer)
+
+	// Save the updated data to the file
+	err = r.saveToFile()
+	if err != nil {
+		return fmt.Errorf("failed to save customer data: %v", err)
+	}
+
+	return nil
+}
+
+// saveToFile saves the updated customer data to the file
+func (r *InMemoryCustomerRepository) saveToFile() error {
+	data, err := json.Marshal(r.customers)
+	if err != nil {
+		return fmt.Errorf("failed to marshal customer data: %v", err)
+	}
+
+	err = ioutil.WriteFile("json/customers.json", data, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write customer data to file: %v", err)
+	}
+
+	return nil
 }
