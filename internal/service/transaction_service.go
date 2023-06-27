@@ -15,16 +15,18 @@ import (
 type TransactionService struct {
 	transactionRepository *repository.TransactionRepository
 	customerRepository    repository.CustomerRepository
+	merchantRepository    repository.MerchantRepository
 }
 
-func NewTransactionService(transactionRepository *repository.TransactionRepository, customerRepository repository.CustomerRepository) *TransactionService {
+func NewTransactionService(transactionRepository *repository.TransactionRepository, customerRepository repository.CustomerRepository, merchantRepository repository.MerchantRepository) *TransactionService {
 	return &TransactionService{
 		transactionRepository: transactionRepository,
 		customerRepository:    customerRepository,
+		merchantRepository:    merchantRepository,
 	}
 }
 
-func (s *TransactionService) ProcessTransaction(customerID string, amount float64, description string) error {
+func (s *TransactionService) ProcessTransaction(customerID string, merchantID string, amount float64, description string) error {
 	log.Println("Processing transaction...")
 
 	// Validate the customer ID
@@ -32,6 +34,12 @@ func (s *TransactionService) ProcessTransaction(customerID string, amount float6
 	_, err := s.customerRepository.GetByID(customerID)
 	if err != nil {
 		return errors.New("invalid customer ID")
+	}
+
+	// Validate the merchant ID
+	_, err = s.merchantRepository.GetByID(merchantID)
+	if err != nil {
+		return errors.New("invalid merchant ID")
 	}
 
 	// Validate the amount
@@ -45,6 +53,7 @@ func (s *TransactionService) ProcessTransaction(customerID string, amount float6
 	transaction := &models.Transaction{
 		ID:          generateTransactionID(),
 		CustomerID:  customerID,
+		MerchantID:  merchantID,
 		Amount:      amount,
 		Description: description,
 	}
@@ -59,6 +68,15 @@ func (s *TransactionService) ProcessTransaction(customerID string, amount float6
 	log.Println("Transaction processed successfully.")
 
 	return nil
+}
+
+func (s *TransactionService) GetMerchantNameByID(merchantID string) (string, error) {
+	merchant, err := s.merchantRepository.GetByID(merchantID)
+	if err != nil {
+		return "", fmt.Errorf("failed to get merchant: %w", err)
+	}
+
+	return merchant.Name, nil
 }
 
 // Helper function to generate a unique transaction ID

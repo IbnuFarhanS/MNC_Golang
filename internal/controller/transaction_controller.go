@@ -21,16 +21,18 @@ func NewTransactionController(transactionService *service.TransactionService) *T
 
 type TransactionRequest struct {
 	CustomerID  string  `json:"customer_id"`
+	MerchantID  string  `json:"merchant_id"`
 	Amount      float64 `json:"amount"`
 	Description string  `json:"description"`
 }
 
 type TransactionResponse struct {
-	Success     bool    `json:"success"`
-	CustomerID  string  `json:"customer_id"`
-	Amount      float64 `json:"amount"`
-	Description string  `json:"description"`
-	Message     string  `json:"message"`
+	Success      bool    `json:"success"`
+	CustomerID   string  `json:"customer_id"`
+	MerchantName string  `json:"merchant_name"`
+	Amount       float64 `json:"amount"`
+	Description  string  `json:"description"`
+	Message      string  `json:"message"`
 }
 
 func (h *TransactionController) ProcessTransaction(w http.ResponseWriter, r *http.Request) {
@@ -56,19 +58,28 @@ func (h *TransactionController) ProcessTransaction(w http.ResponseWriter, r *htt
 
 	log.Println("Received transaction request:", req)
 
-	err = h.transactionService.ProcessTransaction(req.CustomerID, req.Amount, req.Description)
+	err = h.transactionService.ProcessTransaction(req.CustomerID, req.MerchantID, req.Amount, req.Description)
 	if err != nil {
 		log.Println("Failed to process transaction:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Get the merchant name
+	merchantName, err := h.transactionService.GetMerchantNameByID(req.MerchantID)
+	if err != nil {
+		log.Println("Failed to get merchant name:", err)
+		http.Error(w, "Failed to get merchant name", http.StatusInternalServerError)
+		return
+	}
+
 	resp := TransactionResponse{
-		Success:     true,
-		CustomerID:  req.CustomerID,
-		Amount:      req.Amount,
-		Description: req.Description,
-		Message:     "Transaction success",
+		Success:      true,
+		CustomerID:   req.CustomerID,
+		MerchantName: merchantName,
+		Amount:       req.Amount,
+		Description:  req.Description,
+		Message:      "Transaction success",
 	}
 
 	w.Header().Set("Content-Type", "application/json")

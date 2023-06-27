@@ -35,7 +35,11 @@ func (a *App) Initialize() {
 	customerController := controller.NewCustomerController(customerService)
 
 	transactionRepo := repository.NewTransactionRepository("json/transactions.json")
-	transactionService := service.NewTransactionService(transactionRepo, customerRepo)
+	merchantRepo, err := repository.NewInMemoryMerchantRepository("json/merchants.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	transactionService := service.NewTransactionService(transactionRepo, customerRepo, merchantRepo)
 	transactionController := controller.NewTransactionController(transactionService)
 
 	// Register customer routes
