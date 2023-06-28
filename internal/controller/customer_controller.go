@@ -41,6 +41,11 @@ type LoginFailed struct {
 	Message string `json:"message"`
 }
 
+type LogoutResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
 // CustomerController handles customer-related HTTP requests
 type CustomerController struct {
 	service *service.CustomerService
@@ -147,6 +152,30 @@ func (h *CustomerController) Register(w http.ResponseWriter, r *http.Request) {
 		Password: hashedPassword,
 		Phone:    req.Phone,
 		Message:  "Register success",
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(&resp)
+	if err != nil {
+		http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
+		return
+	}
+}
+
+// Logout handles the customer logout HTTP request
+func (h *CustomerController) Logout(w http.ResponseWriter, r *http.Request) {
+	// Extract the token from the request header
+	token := r.Header.Get("Authorization")
+
+	err := h.service.Logout(token)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := LogoutResponse{
+		Success: true,
+		Message: "Logout successful",
 	}
 
 	w.Header().Set("Content-Type", "application/json")

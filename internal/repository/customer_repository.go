@@ -15,6 +15,7 @@ type CustomerRepository interface {
 	GetByUsername(username string) (*models.Customer, error)
 	GetByID(customerID string) (*models.Customer, error)
 	SaveCustomer(customer *models.Customer) error
+	DeleteToken(tokenString string) error
 }
 
 // InMemoryCustomerRepository implements CustomerRepository interface using in-memory data
@@ -103,6 +104,47 @@ func (r *InMemoryCustomerRepository) saveToFile() error {
 	}
 
 	err = ioutil.WriteFile("json/customers.json", data, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write customer data to file: %v", err)
+	}
+
+	return nil
+}
+
+// DeleteToken menghapus token dari data pelanggan
+func (r *InMemoryCustomerRepository) DeleteToken(tokenString string) error {
+	// Baca file .json ke dalam memori
+	filePath := "json/customers.json"
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to read customer data: %v", err)
+	}
+
+	// Unmarshal data ke dalam slice pelanggan yang sesuai
+	var customers []*models.Customer
+	err = json.Unmarshal(data, &customers)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal customer data: %v", err)
+	}
+
+	// Cari pelanggan yang memiliki token yang ingin dihapus
+	for _, customer := range customers {
+		// Jika token ditemukan pada pelanggan
+		if customer.Token == tokenString {
+			// Hapus token
+			customer.Token = ""
+			break
+		}
+	}
+
+	// Marshal kembali data pelanggan ke dalam format .json
+	updatedData, err := json.Marshal(customers)
+	if err != nil {
+		return fmt.Errorf("failed to marshal customer data: %v", err)
+	}
+
+	// Tulis kembali file .json dengan data yang diperbarui
+	err = ioutil.WriteFile(filePath, updatedData, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write customer data to file: %v", err)
 	}

@@ -68,3 +68,13 @@ func (s *CustomerService) Register(name, username, password string, phone int) e
 
 	return nil
 }
+
+// Logout handles the customer logout operation
+func (s *CustomerService) Logout(tokenString string) error {
+	err := s.repo.DeleteToken(tokenString)
+	if err != nil {
+		return fmt.Errorf("failed to delete token: %w", err)
+	}
+
+	return nil
+}

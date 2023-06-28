@@ -46,6 +46,10 @@ func (a *App) Initialize() {
 	log.Println("Registering customer routes...")
 	a.router.HandleFunc("/register", customerController.Register).Methods(http.MethodPost)
 	a.router.HandleFunc("/login", customerController.Login).Methods(http.MethodPost)
+
+	customerSubrouter := a.router.PathPrefix("/customer").Subrouter()
+	customerSubrouter.Use(middleware.AuthMiddleware)
+	customerSubrouter.HandleFunc("/logout", customerController.Logout).Methods(http.MethodPost)
 	log.Println("Customer routes registered.")
 
 	// Register transaction route with middleware

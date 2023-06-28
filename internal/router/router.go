@@ -26,6 +26,13 @@ func (r *Router) RegisterCustomerRoutes(customerController *controller.CustomerC
 	log.Println("Registering customer routes...")
 	r.router.HandleFunc("/register", customerController.Register).Methods(http.MethodPost)
 	r.router.HandleFunc("/login", customerController.Login).Methods(http.MethodPost)
+
+	// Create a new subrouter for customer-related routes
+	customerSubrouter := r.router.PathPrefix("/customer").Subrouter()
+	customerSubrouter.Use(middleware.AuthMiddleware)
+
+	// Register the logout route
+	customerSubrouter.HandleFunc("/logout", customerController.Logout).Methods(http.MethodPost)
 	log.Println("Customer routes registered.")
 }
 

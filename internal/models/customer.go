@@ -6,4 +6,5 @@ type Customer struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Phone    int    `json:"phone"`
+	Token    string `json:"token"`
 }
