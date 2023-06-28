@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/IbnuFarhanS/Golang_MNC/internal/repository"
 	"github.com/IbnuFarhanS/Golang_MNC/internal/service"
 	"github.com/IbnuFarhanS/Golang_MNC/utils"
 )
@@ -48,13 +49,16 @@ type LogoutResponse struct {
 
 // CustomerController handles customer-related HTTP requests
 type CustomerController struct {
-	service *service.CustomerService
+	CustomerRepo repository.CustomerRepository
+	service      *service.CustomerService
 }
 
 // NewCustomerController creates a new instance of CustomerController
-func NewCustomerController(service *service.CustomerService) *CustomerController {
+func NewCustomerController(customerRepo repository.CustomerRepository) *CustomerController {
+	service := service.NewCustomerService(customerRepo)
 	return &CustomerController{
-		service: service,
+		CustomerRepo: customerRepo,
+		service:      service,
 	}
 }
 

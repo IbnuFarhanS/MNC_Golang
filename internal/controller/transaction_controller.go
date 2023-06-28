@@ -5,16 +5,19 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/IbnuFarhanS/Golang_MNC/internal/repository"
 	"github.com/IbnuFarhanS/Golang_MNC/internal/service"
 	"github.com/IbnuFarhanS/Golang_MNC/middleware"
 )
 
 type TransactionController struct {
+	CustomerRepo       repository.CustomerRepository
 	transactionService *service.TransactionService
 }
 
-func NewTransactionController(transactionService *service.TransactionService) *TransactionController {
+func NewTransactionController(customerRepo repository.CustomerRepository, transactionService *service.TransactionService) *TransactionController {
 	return &TransactionController{
+		CustomerRepo:       customerRepo,
 		transactionService: transactionService,
 	}
 }

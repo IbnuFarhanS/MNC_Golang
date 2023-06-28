@@ -7,6 +7,7 @@ import (
 
 	"github.com/IbnuFarhanS/Golang_MNC/internal/models"
 	"github.com/IbnuFarhanS/Golang_MNC/internal/repository"
+	"github.com/IbnuFarhanS/Golang_MNC/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -32,6 +33,18 @@ func (s *CustomerService) Login(username, password string) (bool, error) {
 	err = bcrypt.CompareHashAndPassword([]byte(customer.Password), []byte(password))
 	if err != nil {
 		return false, nil
+	}
+
+	// Generate token
+	token, err := utils.GenerateToken(username, "user")
+	if err != nil {
+		return false, fmt.Errorf("failed to generate token: %w", err)
+	}
+
+	// Save token to customer's data
+	err = s.repo.SaveToken(username, token)
+	if err != nil {
+		return false, fmt.Errorf("failed to save token: %w", err)
 	}
 
 	return true, nil
@@ -71,10 +84,57 @@ func (s *CustomerService) Register(name, username, password string, phone int) e
 
 // Logout handles the customer logout operation
 func (s *CustomerService) Logout(tokenString string) error {
+	log.Println("Deleting token from customer data...")
 	err := s.repo.DeleteToken(tokenString)
 	if err != nil {
 		return fmt.Errorf("failed to delete token: %w", err)
 	}
 
+	log.Println("Saving deleted token to blacklist...")
+	err = s.repo.SaveTokenToBlacklist(tokenString)
+	if err != nil {
+		return fmt.Errorf("failed to save deleted token to blacklist: %w", err)
+	}
+
 	return nil
+}
+
+// GetByID retrieves a customer by ID
+func (s *CustomerService) GetByID(customerID string) (*models.Customer, error) {
+	return s.repo.GetByID(customerID)
+}
+
+// GetByUsername retrieves a customer by username
+func (s *CustomerService) GetByUsername(username string) (*models.Customer, error) {
+	return s.repo.GetByUsername(username)
+}
+
+// SaveCustomer saves a new customer
+func (s *CustomerService) SaveCustomer(customer *models.Customer) error {
+	return s.repo.SaveCustomer(customer)
+}
+
+// SaveToken saves the token to the customer data
+func (s *CustomerService) SaveToken(username, token string) error {
+	return s.repo.SaveToken(username, token)
+}
+
+// DeleteToken deletes the token from the customer data and saves it to the blacklist
+func (s *CustomerService) DeleteToken(tokenString string) error {
+	return s.repo.DeleteToken(tokenString)
+}
+
+// SaveTokenToBlacklist saves the token to the blacklist
+func (s *CustomerService) SaveTokenToBlacklist(token string) error {
+	return s.repo.SaveTokenToBlacklist(token)
+}
+
+// IsTokenBlacklisted checks if a token is blacklisted
+func (s *CustomerService) IsTokenBlacklisted(token string) (bool, error) {
+	return s.repo.IsTokenBlacklisted(token)
+}
+
+// SaveToFile saves the customer data to the file
+func (s *CustomerService) SaveToFile() error {
+	return s.repo.SaveToFile()
 }

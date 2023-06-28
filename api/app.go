@@ -6,20 +6,19 @@ import (
 
 	"github.com/IbnuFarhanS/Golang_MNC/internal/controller"
 	"github.com/IbnuFarhanS/Golang_MNC/internal/repository"
+	"github.com/IbnuFarhanS/Golang_MNC/internal/router"
 	"github.com/IbnuFarhanS/Golang_MNC/internal/service"
-	"github.com/IbnuFarhanS/Golang_MNC/middleware"
-	"github.com/gorilla/mux"
 )
 
 // App represents the API application
 type App struct {
-	router *mux.Router
+	router *router.Router
 }
 
 // NewApp creates a new instance of the App
 func NewApp() *App {
 	return &App{
-		router: mux.NewRouter(),
+		router: router.NewRouter(),
 	}
 }
 
@@ -40,22 +39,16 @@ func (a *App) Initialize() {
 		log.Fatal(err)
 	}
 	transactionService := service.NewTransactionService(transactionRepo, customerRepo, merchantRepo)
-	transactionController := controller.NewTransactionController(transactionService)
+	transactionController := controller.NewTransactionController(customerRepo, transactionService)
 
 	// Register customer routes
 	log.Println("Registering customer routes...")
-	a.router.HandleFunc("/register", customerController.Register).Methods(http.MethodPost)
-	a.router.HandleFunc("/login", customerController.Login).Methods(http.MethodPost)
-
-	customerSubrouter := a.router.PathPrefix("/customer").Subrouter()
-	customerSubrouter.Use(middleware.AuthMiddleware)
-	customerSubrouter.HandleFunc("/logout", customerController.Logout).Methods(http.MethodPost)
+	a.router.RegisterCustomerRoutes(customerController)
 	log.Println("Customer routes registered.")
 
-	// Register transaction route with middleware
+	// Register transaction routes
 	log.Println("Registering transaction routes...")
-	transactionHandler := middleware.AuthMiddleware(http.HandlerFunc(transactionController.ProcessTransaction))
-	a.router.Handle("/transaction", transactionHandler).Methods(http.MethodPost)
+	a.router.RegisterTransactionRoutes(transactionController)
 	log.Println("Transaction routes registered.")
 
 	log.Println("Application initialized.")
@@ -64,5 +57,5 @@ func (a *App) Initialize() {
 // Run starts the application
 func (a *App) Run(port string) {
 	log.Printf("Server started on port %s\n", port)
-	log.Fatal(http.ListenAndServe(":"+port, a.router))
+	log.Fatal(http.ListenAndServe(":"+port, a.router.GetHandler()))
 }

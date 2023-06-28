@@ -29,7 +29,9 @@ func (r *Router) RegisterCustomerRoutes(customerController *controller.CustomerC
 
 	// Create a new subrouter for customer-related routes
 	customerSubrouter := r.router.PathPrefix("/customer").Subrouter()
-	customerSubrouter.Use(middleware.AuthMiddleware)
+
+	// Apply the AuthMiddleware to the customer subrouter
+	customerSubrouter.Use(middleware.AuthMiddleware(customerController.CustomerRepo))
 
 	// Register the logout route
 	customerSubrouter.HandleFunc("/logout", customerController.Logout).Methods(http.MethodPost)
@@ -42,8 +44,8 @@ func (r *Router) RegisterTransactionRoutes(transactionController *controller.Tra
 	// Create a new subrouter for transaction routes
 	subrouter := r.router.PathPrefix("/transaction").Subrouter()
 
-	// Apply the AuthMiddleware to the subrouter
-	subrouter.Use(middleware.AuthMiddleware)
+	// Apply the AuthMiddleware to the transaction subrouter
+	subrouter.Use(middleware.AuthMiddleware(transactionController.CustomerRepo))
 
 	// Register the transaction route
 	subrouter.HandleFunc("", transactionController.ProcessTransaction).Methods(http.MethodPost)
