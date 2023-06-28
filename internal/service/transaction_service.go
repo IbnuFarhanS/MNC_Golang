@@ -45,7 +45,7 @@ func (s *TransactionService) ProcessTransaction(customerID string, merchantID st
 	// Validate the amount
 	log.Println("Validating amount...")
 	if amount <= 0 {
-		return errors.New("minimum amount is 20000")
+		return errors.New("amount cannot be less than or equal to zero")
 	}
 
 	// Create a new transaction
