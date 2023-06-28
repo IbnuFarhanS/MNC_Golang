@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -23,10 +24,9 @@ func NewTransactionController(customerRepo repository.CustomerRepository, transa
 }
 
 type TransactionRequest struct {
-	CustomerID  string  `json:"customer_id"`
-	MerchantID  string  `json:"merchant_id"`
-	Amount      float64 `json:"amount"`
-	Description string  `json:"description"`
+	CustomerID string  `json:"customer_id"`
+	MerchantID string  `json:"merchant_id"`
+	Amount     float64 `json:"amount"`
 }
 
 type TransactionResponse struct {
@@ -61,7 +61,7 @@ func (h *TransactionController) ProcessTransaction(w http.ResponseWriter, r *htt
 
 	log.Println("Received transaction request:", req)
 
-	err = h.transactionService.ProcessTransaction(req.CustomerID, req.MerchantID, req.Amount, req.Description)
+	err = h.transactionService.ProcessTransaction(req.CustomerID, req.MerchantID, req.Amount)
 	if err != nil {
 		log.Println("Failed to process transaction:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -81,7 +81,7 @@ func (h *TransactionController) ProcessTransaction(w http.ResponseWriter, r *htt
 		CustomerID:   req.CustomerID,
 		MerchantName: merchantName,
 		Amount:       req.Amount,
-		Description:  req.Description,
+		Description:  fmt.Sprintf("payment for %s with amount %.2f success", merchantName, req.Amount),
 		Message:      "Transaction success",
 	}
 

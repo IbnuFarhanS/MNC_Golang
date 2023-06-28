@@ -26,7 +26,7 @@ func NewTransactionService(transactionRepository *repository.TransactionReposito
 	}
 }
 
-func (s *TransactionService) ProcessTransaction(customerID string, merchantID string, amount float64, description string) error {
+func (s *TransactionService) ProcessTransaction(customerID string, merchantID string, amount float64) error {
 	log.Println("Processing transaction...")
 
 	// Validate the customer ID
@@ -51,11 +51,10 @@ func (s *TransactionService) ProcessTransaction(customerID string, merchantID st
 	// Create a new transaction
 	log.Println("Creating new transaction...")
 	transaction := &models.Transaction{
-		ID:          generateTransactionID(),
-		CustomerID:  customerID,
-		MerchantID:  merchantID,
-		Amount:      amount,
-		Description: description,
+		ID:         generateTransactionID(),
+		CustomerID: customerID,
+		MerchantID: merchantID,
+		Amount:     amount,
 	}
 
 	// Save the transaction to the repository
