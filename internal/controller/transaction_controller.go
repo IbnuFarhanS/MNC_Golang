@@ -39,9 +39,9 @@ type TransactionResponse struct {
 }
 
 func (h *TransactionController) ProcessTransaction(w http.ResponseWriter, r *http.Request) {
-	log.Println("Processing transaction...")
+	log.Println("Processing transaction...") // Logging pesan transaksi sedang diproses
 
-	// Extract user ID from request context
+	// Extract user ID dari request context
 	userID, ok := r.Context().Value(middleware.UserIDKey).(string)
 	if !ok {
 		log.Println("Failed to extract user ID from context")
@@ -49,28 +49,35 @@ func (h *TransactionController) ProcessTransaction(w http.ResponseWriter, r *htt
 		return
 	}
 
+	// Logging ID pengguna
 	log.Println("User ID:", userID)
 
 	var req TransactionRequest
+	// Decode request menjadi TransactionRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
+		// Decode request menjadi TransactionRequest
 		log.Println("Invalid request payload:", err)
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
+	// Logging request transaksi yang diterima
 	log.Println("Received transaction request:", req)
 
+	// Memproses transaksi menggunakan service transaksi
 	err = h.transactionService.ProcessTransaction(req.CustomerID, req.MerchantID, req.Amount)
 	if err != nil {
+		// Logging jika gagal memproses transaksi
 		log.Println("Failed to process transaction:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Get the merchant name
+	// Mendapatkan nama merchant berdasarkan ID
 	merchantName, err := h.transactionService.GetMerchantNameByID(req.MerchantID)
 	if err != nil {
+		// Logging jika gagal mendapatkan nama merchant
 		log.Println("Failed to get merchant name:", err)
 		http.Error(w, "Failed to get merchant name", http.StatusInternalServerError)
 		return
@@ -86,12 +93,15 @@ func (h *TransactionController) ProcessTransaction(w http.ResponseWriter, r *htt
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	// Mengkodekan respons menjadi JSON
 	err = json.NewEncoder(w).Encode(&resp)
 	if err != nil {
+		// Logging jika gagal mengodekan JSON respons
 		log.Println("Failed to encode JSON response:", err)
 		http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
 		return
 	}
 
+	// Logging jika transaksi berhasil diproses
 	log.Println("Transaction processed successfully.")
 }

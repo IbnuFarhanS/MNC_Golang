@@ -9,50 +9,50 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Router represents the HTTP router
+// Router mewakili router HTTP
 type Router struct {
 	router *mux.Router
 }
 
-// NewRouter creates a new instance of Router
+// NewRouter membuat instance baru dari Router
 func NewRouter() *Router {
 	return &Router{
 		router: mux.NewRouter(),
 	}
 }
 
-// RegisterCustomerRoutes registers customer-related routes
+// RegisterCustomerRoutes mendaftarkan rute terkait pelanggan
 func (r *Router) RegisterCustomerRoutes(customerController *controller.CustomerController) {
-	log.Println("Registering customer routes...")
+	log.Println("Mendaftarkan rute pelanggan...")
 	r.router.HandleFunc("/register", customerController.Register).Methods(http.MethodPost)
 	r.router.HandleFunc("/login", customerController.Login).Methods(http.MethodPost)
 
-	// Create a new subrouter for customer-related routes
+	// Membuat subrouter baru untuk rute terkait pelanggan
 	customerSubrouter := r.router.PathPrefix("/customer").Subrouter()
 
-	// Apply the AuthMiddleware to the customer subrouter
+	// Menerapkan AuthMiddleware ke subrouter pelanggan
 	customerSubrouter.Use(middleware.AuthMiddleware(customerController.CustomerRepo))
 
-	// Register the logout route
+	// Mendaftarkan rute logout
 	customerSubrouter.HandleFunc("/logout", customerController.Logout).Methods(http.MethodPost)
-	log.Println("Customer routes registered.")
+	log.Println("Rute pelanggan terdaftar.")
 }
 
-// RegisterTransactionRoutes registers transaction-related routes
+// RegisterTransactionRoutes mendaftarkan rute terkait transaksi
 func (r *Router) RegisterTransactionRoutes(transactionController *controller.TransactionController) {
-	log.Println("Registering transaction routes...")
-	// Create a new subrouter for transaction routes
+	log.Println("Mendaftarkan rute transaksi...")
+	// Membuat subrouter baru untuk rute transaksi
 	subrouter := r.router.PathPrefix("/transaction").Subrouter()
 
-	// Apply the AuthMiddleware to the transaction subrouter
+	// Menerapkan AuthMiddleware ke subrouter transaksi
 	subrouter.Use(middleware.AuthMiddleware(transactionController.CustomerRepo))
 
-	// Register the transaction route
+	// Mendaftarkan rute transaksi
 	subrouter.HandleFunc("", transactionController.ProcessTransaction).Methods(http.MethodPost)
-	log.Println("Transaction routes registered.")
+	log.Println("Rute transaksi terdaftar.")
 }
 
-// GetHandler returns the HTTP handler
+// GetHandler mengembalikan handler HTTP
 func (r *Router) GetHandler() http.Handler {
 	return r.router
 }

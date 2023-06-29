@@ -11,7 +11,7 @@ import (
 	"github.com/IbnuFarhanS/Golang_MNC/internal/repository"
 )
 
-// TransactionService handles transaction-related operations
+// TransactionService menangani operasi terkait transaksi
 type TransactionService struct {
 	transactionRepository *repository.TransactionRepository
 	customerRepository    repository.CustomerRepository
@@ -27,29 +27,29 @@ func NewTransactionService(transactionRepository *repository.TransactionReposito
 }
 
 func (s *TransactionService) ProcessTransaction(customerID string, merchantID string, amount float64) error {
-	log.Println("Processing transaction...")
+	log.Println("Memproses transaksi...")
 
-	// Validate the customer ID
-	log.Println("Validating customer ID...")
+	// Validasi customer ID
+	log.Println("Memvalidasi customer ID...")
 	_, err := s.customerRepository.GetByID(customerID)
 	if err != nil {
-		return errors.New("invalid customer ID")
+		return errors.New("ID customer tidak valid")
 	}
 
-	// Validate the merchant ID
+	// Validasi merchant ID
 	_, err = s.merchantRepository.GetByID(merchantID)
 	if err != nil {
-		return errors.New("invalid merchant ID")
+		return errors.New("ID merchant tidak valid")
 	}
 
-	// Validate the amount
-	log.Println("Validating amount...")
+	// Validasi jumlah transaksi
+	log.Println("Memvalidasi jumlah transaksi...")
 	if amount <= 0 {
-		return errors.New("amount cannot be less than or equal to zero")
+		return errors.New("jumlah transaksi tidak boleh kurang dari atau sama dengan nol")
 	}
 
-	// Create a new transaction
-	log.Println("Creating new transaction...")
+	// Membuat transaksi baru
+	log.Println("Membuat transaksi baru...")
 	transaction := &models.Transaction{
 		ID:         generateTransactionID(),
 		CustomerID: customerID,
@@ -57,14 +57,14 @@ func (s *TransactionService) ProcessTransaction(customerID string, merchantID st
 		Amount:     amount,
 	}
 
-	// Save the transaction to the repository
-	log.Println("Saving transaction...")
+	// Menyimpan transaksi ke repository
+	log.Println("Menyimpan transaksi...")
 	err = s.transactionRepository.SaveTransaction(transaction)
 	if err != nil {
-		return fmt.Errorf("failed to save transaction: %w", err)
+		return fmt.Errorf("gagal menyimpan transaksi: %w", err)
 	}
 
-	log.Println("Transaction processed successfully.")
+	log.Println("Transaksi berhasil diproses.")
 
 	return nil
 }
@@ -72,13 +72,13 @@ func (s *TransactionService) ProcessTransaction(customerID string, merchantID st
 func (s *TransactionService) GetMerchantNameByID(merchantID string) (string, error) {
 	merchant, err := s.merchantRepository.GetByID(merchantID)
 	if err != nil {
-		return "", fmt.Errorf("failed to get merchant: %w", err)
+		return "", fmt.Errorf("gagal mendapatkan merchant: %w", err)
 	}
 
 	return merchant.Name, nil
 }
 
-// Helper function to generate a unique transaction ID
+// Fungsi bantu untuk menghasilkan ID transaksi yang unik
 func generateTransactionID() string {
 	transactionCounter := time.Now().UnixNano() // Menggunakan timestamp saat ini sebagai basis ID transaksi
 	return strconv.FormatInt(transactionCounter, 10)

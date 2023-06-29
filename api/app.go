@@ -10,52 +10,59 @@ import (
 	"github.com/IbnuFarhanS/Golang_MNC/internal/service"
 )
 
-// App represents the API application
+// App mewakili aplikasi API
 type App struct {
 	router *router.Router
 }
 
-// NewApp creates a new instance of the App
+// NewApp membuat instance baru dari App
 func NewApp() *App {
 	return &App{
 		router: router.NewRouter(),
 	}
 }
 
-// Initialize initializes the application
+// Initialize menginisialisasi aplikasi
 func (a *App) Initialize() {
-	log.Println("Initializing the application...")
+	log.Println("Menginisialisasi aplikasi...")
 
 	customerRepo, err := repository.NewInMemoryCustomerRepository("json/customers.json")
 	if err != nil {
+		// Log fatal jika gagal membuat repository pelanggan dalam memori
 		log.Fatal(err)
 	}
+	// Membuat layanan pelanggan baru dengan repository yang sudah dibuat
 	customerService := service.NewCustomerService(customerRepo)
+	// Membuat kontroler pelanggan baru dengan layanan pelanggan
 	customerController := controller.NewCustomerController(customerService)
 
+	// Membuat repository transaksi baru
 	transactionRepo := repository.NewTransactionRepository("json/transactions.json")
 	merchantRepo, err := repository.NewInMemoryMerchantRepository("json/merchants.json")
 	if err != nil {
+		// Log fatal jika gagal membuat repository merchant dalam memori
 		log.Fatal(err)
 	}
+	// Membuat layanan transaksi baru dengan repository yang sudah dibuat
 	transactionService := service.NewTransactionService(transactionRepo, customerRepo, merchantRepo)
+	// Membuat kontroler transaksi baru dengan layanan transaksi
 	transactionController := controller.NewTransactionController(customerRepo, transactionService)
 
-	// Register customer routes
-	log.Println("Registering customer routes...")
+	// Mendaftarkan rute pelanggan
+	log.Println("Mendaftarkan rute pelanggan...")
 	a.router.RegisterCustomerRoutes(customerController)
-	log.Println("Customer routes registered.")
+	log.Println("Rute pelanggan terdaftar.")
 
-	// Register transaction routes
-	log.Println("Registering transaction routes...")
+	// Mendaftarkan rute transaksi
+	log.Println("Mendaftarkan rute transaksi...")
 	a.router.RegisterTransactionRoutes(transactionController)
-	log.Println("Transaction routes registered.")
+	log.Println("Rute transaksi terdaftar.")
 
-	log.Println("Application initialized.")
+	log.Println("Aplikasi diinisialisasi.")
 }
 
-// Run starts the application
+// Run menjalankan aplikasi
 func (a *App) Run(port string) {
-	log.Printf("Server started on port %s\n", port)
+	log.Printf("Server berjalan pada port %s\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, a.router.GetHandler()))
 }

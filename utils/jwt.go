@@ -7,17 +7,17 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+// GenerateToken digunakan untuk menghasilkan token JWT dengan menggunakan user ID dan role yang diberikan
 func GenerateToken(userID string, role string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
 		"role":    role,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(), // Set expiration time, e.g., 1 day from now
+		"exp":     time.Now().Add(time.Hour * 1).Unix(), // Set expiration time, e.g., 1 Jam
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Set JWT signing key
-	// Replace "your-secret-key" with your own secret key for signing the token
 	tokenString, err := token.SignedString([]byte("your-secret-key"))
 	if err != nil {
 		return "", err
@@ -26,6 +26,7 @@ func GenerateToken(userID string, role string) (string, error) {
 	return tokenString, nil
 }
 
+// VerifyToken digunakan untuk memverifikasi keabsahan token JWT yang diberikan.
 func VerifyToken(tokenString string) (*jwt.Token, error) {
 	// Parse token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -34,7 +35,6 @@ func VerifyToken(tokenString string) (*jwt.Token, error) {
 			return nil, errors.New("invalid token signing method")
 		}
 
-		// Replace "your-secret-key" with your own secret key used for signing the token
 		return []byte("your-secret-key"), nil
 	})
 

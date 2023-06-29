@@ -47,13 +47,13 @@ type LogoutResponse struct {
 	Message string `json:"message"`
 }
 
-// CustomerController handles customer-related HTTP requests
+// CustomerController menangani permintaan HTTP terkait pelanggan
 type CustomerController struct {
 	CustomerRepo repository.CustomerRepository
 	service      *service.CustomerService
 }
 
-// NewCustomerController creates a new instance of CustomerController
+// NewCustomerController membuat instance baru dari CustomerController
 func NewCustomerController(customerRepo repository.CustomerRepository) *CustomerController {
 	service := service.NewCustomerService(customerRepo)
 	return &CustomerController{
@@ -62,18 +62,18 @@ func NewCustomerController(customerRepo repository.CustomerRepository) *Customer
 	}
 }
 
-// LoginRequest represents the login request payload
+// LoginRequest mewakili payload permintaan login
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-// Login handles the login HTTP request
+// Login menangani permintaan HTTP login
 func (h *CustomerController) Login(w http.ResponseWriter, r *http.Request) {
 	var req LoginRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		http.Error(w, "Payload permintaan tidak valid", http.StatusBadRequest)
 		return
 	}
 
@@ -86,44 +86,44 @@ func (h *CustomerController) Login(w http.ResponseWriter, r *http.Request) {
 	if success {
 		token, err := utils.GenerateToken(req.Username, "user")
 		if err != nil {
-			http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+			http.Error(w, "Gagal menghasilkan token", http.StatusInternalServerError)
 			return
 		}
 
 		resp := LoginResponse{
 			Success:  true,
 			Username: req.Username,
-			Message:  "Login successful",
+			Message:  "Login berhasil",
 			Token:    token,
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(&resp)
 		if err != nil {
-			http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
+			http.Error(w, "Gagal mengodekan respons JSON", http.StatusInternalServerError)
 			return
 		}
 	} else {
 		resp := LoginFailed{
 			Success: false,
-			Message: "Login failed, username or password incorrect",
+			Message: "Login gagal, username atau password salah",
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(&resp)
 		if err != nil {
-			http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
+			http.Error(w, "Gagal mengodekan respons JSON", http.StatusInternalServerError)
 			return
 		}
 	}
 }
 
-// Register handles the customer registration HTTP request
+// Register menangani permintaan HTTP registrasi pelanggan
 func (h *CustomerController) Register(w http.ResponseWriter, r *http.Request) {
 	var req RegisterRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		http.Error(w, "Payload permintaan tidak valid", http.StatusBadRequest)
 		return
 	}
 
@@ -137,7 +137,7 @@ func (h *CustomerController) Register(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(&resp)
 		if err != nil {
-			http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
+			http.Error(w, "Gagal mengodekan respons JSON", http.StatusInternalServerError)
 			return
 		}
 		return
@@ -145,7 +145,7 @@ func (h *CustomerController) Register(w http.ResponseWriter, r *http.Request) {
 
 	hashedPassword, err := utils.GenerateHash(req.Password)
 	if err != nil {
-		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+		http.Error(w, "Gagal menghash password", http.StatusInternalServerError)
 		return
 	}
 
@@ -155,20 +155,20 @@ func (h *CustomerController) Register(w http.ResponseWriter, r *http.Request) {
 		Username: req.Username,
 		Password: hashedPassword,
 		Phone:    req.Phone,
-		Message:  "Register success",
+		Message:  "Registrasi berhasil",
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(&resp)
 	if err != nil {
-		http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
+		http.Error(w, "Gagal mengodekan respons JSON", http.StatusInternalServerError)
 		return
 	}
 }
 
-// Logout handles the customer logout HTTP request
+// Logout menangani permintaan HTTP logout pelanggan
 func (h *CustomerController) Logout(w http.ResponseWriter, r *http.Request) {
-	// Extract the token from the request header
+	// Mengambil token dari header permintaan
 	token := r.Header.Get("Authorization")
 
 	err := h.service.Logout(token)
@@ -179,13 +179,13 @@ func (h *CustomerController) Logout(w http.ResponseWriter, r *http.Request) {
 
 	resp := LogoutResponse{
 		Success: true,
-		Message: "Logout successful",
+		Message: "Logout berhasil",
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(&resp)
 	if err != nil {
-		http.Error(w, "Failed to encode JSON response", http.StatusInternalServerError)
+		http.Error(w, "Gagal mengodekan respons JSON", http.StatusInternalServerError)
 		return
 	}
 }

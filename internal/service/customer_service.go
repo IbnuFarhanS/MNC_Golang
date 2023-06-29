@@ -11,19 +11,19 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// CustomerService handles customer-related operations
+// CustomerServic untuke menangani operasi terkait pelanggan
 type CustomerService struct {
 	repo repository.CustomerRepository
 }
 
-// NewCustomerService creates a new instance of CustomerService
+// NewCustomerService untuk membuat instance baru dari CustomerService
 func NewCustomerService(repo repository.CustomerRepository) *CustomerService {
 	return &CustomerService{
 		repo: repo,
 	}
 }
 
-// Login handles the login operation
+// Login untuk menangani operasi login
 func (s *CustomerService) Login(username, password string) (bool, error) {
 	customer, err := s.repo.GetByUsername(username)
 	if err != nil {
@@ -38,31 +38,31 @@ func (s *CustomerService) Login(username, password string) (bool, error) {
 	// Generate token
 	token, err := utils.GenerateToken(username, "user")
 	if err != nil {
-		return false, fmt.Errorf("failed to generate token: %w", err)
+		return false, fmt.Errorf("gagal menghasilkan token: %w", err)
 	}
 
-	// Save token to customer's data
+	// Simpan token ke data pelanggan
 	err = s.repo.SaveToken(username, token)
 	if err != nil {
-		return false, fmt.Errorf("failed to save token: %w", err)
+		return false, fmt.Errorf("gagal menyimpan token: %w", err)
 	}
 
 	return true, nil
 }
 
-// Register handles the customer registration operation
+// Register untuk menangani operasi registrasi pelanggan
 func (s *CustomerService) Register(name, username, password string, phone int) error {
-	log.Println("Registering new customer...")
+	log.Println("Mendaftarkan pelanggan baru...")
 
-	// Check if username already exists
-	log.Println("Checking username availability...")
+	// Periksa apakah username sudah ada
+	log.Println("Memeriksa ketersediaan username...")
 	_, err := s.repo.GetByUsername(username)
 	if err == nil {
-		return errors.New("username already exists")
+		return errors.New("username sudah digunakan")
 	}
 
-	// Create a new customer
-	log.Println("Creating new customer...")
+	// Buat pelanggan baru
+	log.Println("Membuat pelanggan baru...")
 	customer := &models.Customer{
 		Name:     name,
 		Username: username,
@@ -70,71 +70,71 @@ func (s *CustomerService) Register(name, username, password string, phone int) e
 		Phone:    phone,
 	}
 
-	// Save the customer to the repository
-	log.Println("Saving customer...")
+	// Simpan pelanggan ke repositori
+	log.Println("Menyimpan pelanggan...")
 	err = s.repo.SaveCustomer(customer)
 	if err != nil {
-		return fmt.Errorf("failed to save customer: %w", err)
+		return fmt.Errorf("gagal menyimpan pelanggan: %w", err)
 	}
 
-	log.Println("Customer registration successful.")
+	log.Println("Registrasi pelanggan berhasil.")
 
 	return nil
 }
 
-// Logout handles the customer logout operation
+// Logout untuk menangani operasi logout pelanggan
 func (s *CustomerService) Logout(tokenString string) error {
-	log.Println("Deleting token from customer data...")
+	log.Println("Menghapus token dari data pelanggan...")
 	err := s.repo.DeleteToken(tokenString)
 	if err != nil {
-		return fmt.Errorf("failed to delete token: %w", err)
+		return fmt.Errorf("gagal menghapus token: %w", err)
 	}
 
-	log.Println("Saving deleted token to blacklist...")
+	log.Println("Menyimpan token yang dihapus ke daftar hitam...")
 	err = s.repo.SaveTokenToBlacklist(tokenString)
 	if err != nil {
-		return fmt.Errorf("failed to save deleted token to blacklist: %w", err)
+		return fmt.Errorf("gagal menyimpan token yang dihapus ke daftar hitam: %w", err)
 	}
 
 	return nil
 }
 
-// GetByID retrieves a customer by ID
+// GetByID mengambil untuk pelanggan berdasarkan ID
 func (s *CustomerService) GetByID(customerID string) (*models.Customer, error) {
 	return s.repo.GetByID(customerID)
 }
 
-// GetByUsername retrieves a customer by username
+// GetByUsername untuk mengambil pelanggan berdasarkan username
 func (s *CustomerService) GetByUsername(username string) (*models.Customer, error) {
 	return s.repo.GetByUsername(username)
 }
 
-// SaveCustomer saves a new customer
+// SaveCustomer untuk menyimpan pelanggan baru
 func (s *CustomerService) SaveCustomer(customer *models.Customer) error {
 	return s.repo.SaveCustomer(customer)
 }
 
-// SaveToken saves the token to the customer data
+// SaveToken untuk menyimpan token ke data pelanggan
 func (s *CustomerService) SaveToken(username, token string) error {
 	return s.repo.SaveToken(username, token)
 }
 
-// DeleteToken deletes the token from the customer data and saves it to the blacklist
+// DeleteToken untuk menghapus token dari data pelanggan dan menyimpannya ke daftar hitam
 func (s *CustomerService) DeleteToken(tokenString string) error {
 	return s.repo.DeleteToken(tokenString)
 }
 
-// SaveTokenToBlacklist saves the token to the blacklist
+// SaveTokenToBlacklist untuk menyimpan token ke daftar hitam
 func (s *CustomerService) SaveTokenToBlacklist(token string) error {
 	return s.repo.SaveTokenToBlacklist(token)
 }
 
-// IsTokenBlacklisted checks if a token is blacklisted
+// IsTokenBlacklisted untuk memeriksa apakah token ada dalam daftar hitam
 func (s *CustomerService) IsTokenBlacklisted(token string) (bool, error) {
 	return s.repo.IsTokenBlacklisted(token)
 }
 
-// SaveToFile saves the customer data to the file
+// SaveToFile untuk menyimpan data pelanggan ke file
 func (s *CustomerService) SaveToFile() error {
 	return s.repo.SaveToFile()
 }
