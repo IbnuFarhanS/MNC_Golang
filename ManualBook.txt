@@ -1,0 +1,67 @@
+Pengguna dapat menjalankan langsung program dengan command "go run main.go".
+
+Jika berhasil maka pengguna dapat menjalankan fitur" Rest API dengan bantuan seperti postman dll.
+
+Cara menggunakan fitur :
+1. Membuat akun pengguna terlebih dahulu dengan url : http://localhost:8080/register metode POST dengan contoh body request berikut :
+{
+  "name": "Pengguna 1",
+  "username": "Username1",
+  "password": "username123",
+  "phone": 1234567890
+}
+Jika berhasil resgister maka username dan password pengguna bisa digunakan untuk melakukan login. dan data akan terseimpan ke file json/customers.json
+
+2. Melakukan login menggunakan akun yang terdaftar dengan url : http://localhost:8080/login metode POST dengan contoh body request berikut :
+{
+  "username": "Username1",
+  "password": "username123"
+}
+jika berhasil pengguna akan mendapatkan Token. Token yang di dapat akan otomatis di update ke file customers.json
+
+3. Token yang didapatkan saat login dapat digunakan untuk mengakses fitur transaction dan fitur logout dengan memasukkan Token tersebut
+ke dalam Header Authorization type Bearer Token dan memasukkan Token yang di dapat tersebut.
+
+4. Jika sudah memasukkan token tersebut maka pengguna dapat membuat transaction atau pembayaran dengan url : http://localhost:8080/transaction 
+metode POST dengan contoh body request berikut :
+{
+  "customer_id": "1", --Contoh customer_id yang terdaftar = 1
+  "merchant_id": "2", --Contoh merchant_id yang terdaftar = 2
+  "amount": 10000 --amount tidak boleh bernilai <= 0
+}
+jika berhasil data transaction akan tersimpan di file json/transactions.json
+
+5. Jika pengguna  ingin melakukan logout maka perlu di ingat untuk memasukkan Token yang valid atau sama dengan yang digunakan saat transaction.
+lalu pengguna dapat menjalankan dengan url : http://localhost:8080/customer/logout metode POST dan tidak perlu memasukkan body request.
+jika berhasil logout maka Token yang digunakan sebelumnya akan terseimpan kedalam file json/blacklist_token.json
+jika Token sudah berada di file blacklist_token.json maka tidak akan bisa digunakan lagi untuk Authorization. pengguna harus login ulang untuk
+mendapatkan Token yang baru dan valid untuk dapat digunakan.
+
+CATATAN :
+- File json berada di package json
+- Terdapat 4 file json
+- File merchant.json berisi contoh merchant yang di tuliskan secara manual, jadi jika ingin mencoba untuk menambahkan contoh merchant yang lain
+dapat langsung menambahkannya kedalam file tersebut mengikuti format yang sudah di contohkan didalamnya
+- File customers.json, transactions.json, dan blacklist_token.json akan saya kosongkan karena data yang masuk ke file tersebut bersifat otomatis
+saat menjalankan fitur yang dijelaskan sebelumnya.
+
+- Perlu di ingat juga jika pengguna menjalankan program dan melakukan register dengan format :
+{
+  "name": "Pengguna 1",
+  "username": "Username1",
+  "password": "username123",
+  "phone": 1234567890
+}
+maka login harus dengan password yang belum di hash seperti berikut:
+{
+  "username": "Username1",
+  "password": "username123"
+}
+jika pengguna menghentikan program dan menjalankan ulang program tersebut dan ingin langsung login dengan akun yang sebelumnya digunakan,
+maka harus menggunakan password yang sudah di hash. password yang sudah di hash ada di file customers.json.jadi contoh body requestnya akan menjadi seperti :
+{
+  "username": "Username1",
+  "password": "password yang sudah di hash, dapat dilihat di file customers.json"
+}
+hal tersebut dikarenakan program yang dibuat menyimpan data kedalam File json bukan kedalam penyimpanan yang lebih kompleks seperti Database.
+Sehingga terdapat keterbatasan untuk modifikasi penggunaan data.
